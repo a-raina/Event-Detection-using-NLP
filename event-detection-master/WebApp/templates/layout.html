@@ -1,0 +1,17 @@
+<!DOCTYPE html5>
+<html>
+  <head>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='form.js') }}"></script>
+    <title>Event Detection</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Event Detection Comps</h1>
+      {% block content %}
+      {% endblock %}
+    </div>
+  </body>
+</html>

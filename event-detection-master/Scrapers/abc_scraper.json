@@ -1,0 +1,5 @@
+{
+  "id" : "ABC",
+  "sectioning" : [["<p itemprop=\"articleBody\">((.|\n)*?)</p>", "$1\n"]],
+  "filtering" : [["<a.*?>(.*?)</a>", "$1"], ["<.*?>", ""], ["\n{2,}", "\n"]]
+}

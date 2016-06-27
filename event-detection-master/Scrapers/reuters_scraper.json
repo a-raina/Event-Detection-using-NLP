@@ -1,0 +1,14 @@
+{
+	"id" : "REUTERS",
+    "class" : "eventdetection.downloader.PythonScraper",
+    "python" : {
+    	"scripts" : {
+    		"sectioning" : ["../PythonScrapers/ReutersScraper.py"]
+    	},
+    	"parameters" : {
+    		"sectioning" : {}
+    	}
+    },
+	"sectioning" : [["<span id=\"articleText\">(.*?)</span>", "$1\n"]],
+	"filtering" : [["<p>.*?</p>", "$1"], ["<a.*?>(.*?)</a>", "$1"]]
+}

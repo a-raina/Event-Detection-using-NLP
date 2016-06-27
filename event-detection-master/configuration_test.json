@@ -1,0 +1,41 @@
+{
+  "articles" : {
+    "deletion-delay" : {
+      "years" : 1,
+      "months" : 0,
+      "weeks" : 0,
+      "days" : 0,
+      "hours" : 0,
+      "minutes" : 0,
+      "seconds" : 0
+    },
+    "pos-tagging" : {
+      "enable-pos-tagging" : true,
+      "enable-tag-simplification" : false
+    }
+  },
+  "database" : {
+    "server" : "localhost",
+    "port" : null,
+    "type" : "PostgreSQL",
+    "name" : "event_detection_test",
+    "user" : "root",
+    "pass" : null
+  },
+  "paths" : {
+    "sources" : [ ],
+    "feeds" : [ ],
+    "scrapers" : [ "./scrapers" ],
+    "articles" : [ "./Testing/articles_test" ],
+    "validators" : [ "./validators" ]
+  },
+  "tables" : {
+    "sources" : "sources",
+    "feeds" : "feeds",
+    "scrapers" : null,
+    "articles" : "articles",
+    "validators" : "validation_algorithms",
+    "results" : "validation_results"
+  },
+  "test-downloader" : true
+}

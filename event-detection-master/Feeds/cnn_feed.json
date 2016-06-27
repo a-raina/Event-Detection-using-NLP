@@ -1,0 +1,6 @@
+{
+	"name" : "CNN_US",
+	"source" : 1,
+	"url" : "http://rss.cnn.com/rss/cnn_us.rss",
+	"scraperIDs" : ["CNN"]
+}

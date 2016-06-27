@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+
+  <div class="row">
+    <div class="col-xs-12">
+      <h3>Articles that validate "{{ query["subject"] }} {{ query["verb"] }} {{ query["direct_obj"] }} {{ query["indirect_obj"] }} {{ query["loc"] }}"</h3>
+    </div>
+  </div>
+
+  {% if articles|length != 0 %}
+    <table class="table table-striped">
+      <thead>
+        <th>Article Name</th>
+        <th>Source</th>
+        <th>View Article</th>
+      </thead>
+      <tbody>
+        {% for article in articles %}
+          <tr>
+            <td>{{ article["title"] }}</td>
+            <td>{{ article["source"] }}</td>
+            <td><a href="{{ article['url'] }}" class="btn btn-default btn-sm">View Article</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    Query not yet matched
+  {% endif %}
+
+  <div class="row">
+    <div class="col-xs-12">
+      <a href="{{ url_for('queries') }}"><i class="fa fa-arrow-left"></i> Back to All Queries</a>
+    </div>
+  </div>
+{% endblock %}

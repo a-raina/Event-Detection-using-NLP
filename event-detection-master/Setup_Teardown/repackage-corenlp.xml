@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--Be sure to set name and use.libs before using this file.-->
+<project default="repackage" name="Repackages the stanford corenlp library jars" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<!--ANT 1.9.1+ is required                                      -->
+	<!--Most properties in this file have a default value, but can also be set from the command line.-->
+	<!--When setting the prefix from the command line, it must include a trailing '/'.-->
+	<!--When setting the .jar's name from the command line, it must include the '.jar' suffix.-->
+
+	<!--Change this value to the desired name of the .jar file. Include the '.jar' suffix.-->
+	<property unless:set="name" name="name" value="repackaged-stanford-corenlp.jar" />
+	
+	<!--The path into which the .jar should be placed-->
+	<property unless:set="prefix" name="prefix" value="../../" />
+
+	<!--Construct the location of the output .jar file-->
+	<property if:set="jar" name="jar" location="${jar}" />
+	<property unless:set="jar" name="jar" location="${prefix}${name}" />
+
+	<!--Convert the libs property to a location-->
+	<property unless:set="libs" name="libs" value="../../" />
+	<property name="libs" location="${libs}" />
+	
+	<patternset id="libraries">
+		<!--Add the names of the libraries to be included here.-->
+		<include name="**/stanford-corenlp-3*.jar" />
+	</patternset>
+	
+	<target name="repackage" depends="construct.classpath">
+		<delete file="${jar}" />
+		<jar destfile="${jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Class-Path" value="." />
+			</manifest>
+			<restrict>
+				<name regex=".*\.class" />
+				<archives>
+					<zips>
+						<multirootfileset>
+							<basedir if:set="brew.prefix" file="${brew.prefix}/lib/" />
+							<basedir file="${libs}" />
+							<patternset>
+								<include name="**/stanford-corenlp-3*.jar" />
+							</patternset>
+						</multirootfileset>
+					</zips>
+				</archives>
+			</restrict>
+			<restrict>
+				<name regex="edu/stanford/nlp/trees/semgraph/.*\.class" />
+				<archives>
+					<zips>
+						<multirootfileset>
+							<basedir if:set="brew.prefix" file="${brew.prefix}/lib/" />
+							<basedir file="${libs}" />
+							<patternset>
+								<include name="**/stanford-corenlp-2012-01-08.jar" />
+							</patternset>
+						</multirootfileset>
+					</zips>
+				</archives>
+			</restrict>
+		</jar>
+	</target>
+
+	<target name="construct.classpath" depends="find.brew">
+		<echo if:true="${use.homebrew}" level="info" message="Using libraries from homebrew." />
+		<echo unless:true="${use.homebrew}" level="info" message="Using libraries from ${libs}" />
+		<pathconvert property="manifest.classpath" pathsep=" ">
+			<path id="build.classpath">
+				<multirootfileset id="library">
+					<basedir if:set="brew.prefix" file="${brew.prefix}/lib/" />
+					<basedir file="${libs}" />
+					<patternset refid="libraries" />
+				</multirootfileset>
+			</path>
+			<scriptmapper language="javascript">
+				self.addMappedName(source.replace(/ /g, "%20"));
+			</scriptmapper>
+		</pathconvert>
+	</target>
+
+	<target name="find.brew">
+		<exec unless:set="brew.path" searchpath="true" executable="env" outputproperty="brew.path">
+			<arg value="bash" />
+			<arg value="-l" />
+			<arg value="-c" />
+			<arg value="which brew" />
+		</exec>
+		<exec unless:set="brew.prefix" searchpath="true" executable="${brew.path}" outputproperty="brew.prefix">
+			<arg value="--prefix" />
+		</exec>
+	</target>
+</project>

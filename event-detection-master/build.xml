@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--Be sure to set name and use.libs before using this file.-->
+<project default="create_jar" name="Generalized ANT Buildfile, modified for comps" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<!--ANT 1.9.1+ is required                                      -->
+	<!--Most properties in this file have a default value, but can also be set from the command line.-->
+	<!--When setting the prefix from the command line, it must include a trailing '/'.-->
+	<!--When setting the .jar's name from the command line, it must include the '.jar' suffix.-->
+
+	<!--Change this value to the desired name of the .jar file. Include the '.jar' suffix.-->
+	<property unless:set="name" name="name" value="event-detection.jar" />
+
+	<!--These two values cannot be changed from the command line.-->
+	<!--Change this value to true if the project uses external libraries.-->
+	<property name="use.libs" value="true" />
+	<!--Change this value to true if the project uses native libraries.-->
+	<property name="use.nativelibs" value="false" />
+
+	<!--Change this value to true if the project is assuming Homebrew was used to install its libraries.-->
+	<property unless:set="use.hombrew" name="use.homebrew" value="true" />
+
+	<!--Path parameters.  These generally won't need to be changed-->
+	<property unless:set="src" name="src" location="src" />
+	<property unless:set="bin" name="bin" location="bin" />
+	<property unless:set="doc" name="doc" value="doc" />
+	<property unless:set="libs" name="libs" value="../" />
+	<property unless:set="nativelibs" name="nativelibs" value="native libraries" />
+	<!--The path into which the .jar should be placed-->
+	<property unless:set="prefix" name="prefix" value="../" />
+	<!--Whether to force a complete rebuild every run-->
+	<property unless:set="clean" name="clean" value="true" />
+
+	<!--What to pack into the .jar in addition to the compiled code.-->
+	<property unless:set="package.doc" name="package.doc" value="true" />
+	<property unless:set="package.src" name="package.src" value="true" />
+	<property unless:set="package.libs" name="package.libs" value="false" />
+	<property unless:set="package.nativelibs" name="package.nativelibs" value="${use.nativelibs}" />
+
+	<!--Construct the location of the output .jar file-->
+	<property if:set="jar" name="jar" location="${jar}" />
+	<property unless:set="jar" name="jar" location="${prefix}${name}" />
+
+	<!--Convert the libs property to a location-->
+	<property name="libs" location="${libs}" />
+	
+	<patternset id="libraries">
+		<!--Add the names of the libraries to be included here.-->
+		<include name="Structures.jar" />
+		<include name="Utils.jar" />
+		<include name="Lexer.jar" />
+		<include name="JSONLib.jar" />
+		<include name="**/rome*.jar" />
+		<include name="**/jdom*.jar" />
+		<include name="**/slf4j*.jar" />
+		<exclude name="**/slf4j-api.jar" />
+		<exclude name="**/slf4j-simple.jar" />
+		<include name="**/repackaged-stanford-corenlp*.jar" />
+		<include name="**/stanford-corenlp-full*/**/*.jar" />
+		<include name="**/postgresql*.jar" />
+		<include name="**/Semilar*.jar" />
+	</patternset>
+
+	<patternset id="Build Excludes">
+		<exclude name="**/*.css" />
+		<!--Add the names of files to exclude from the src directory here.-->
+	</patternset>
+
+	<patternset id="Debug">
+		<!--Add the names of debug classes that should be excluded from the packaged jar here.-->
+		<exclude name="**/testCases/**" />
+	</patternset>
+
+	<target name="javadoc">
+		<javadoc access="protected" author="true" destdir="${doc}" packagenames="*" source="1.8" splitindex="true" use="true" version="true">
+			<fileset dir="${src}">
+				<patternset refid="Build Excludes" />
+				<patternset refid="Debug" />
+			</fileset>
+			<classpath if:true="${use.libs}" refid="build.classpath" />
+		</javadoc>
+	</target>
+
+	<target name="build">
+		<mkdir dir="${bin}" />
+		<javac srcdir="${src}" destdir="${bin}" includeAntRuntime="false" debug="true" debuglevel="lines,vars,source">
+			<patternset refid="Build Excludes" />
+			<classpath if:true="${use.libs}" refid="build.classpath" />
+		</javac>
+		<javac srcdir="${src}/../Scrapers" destdir="${src}/../Scrapers" includeAntRuntime="false" debug="true" debuglevel="lines,vars,source">
+			<include name="**/*.java" />
+			<classpath>
+				<path if:true="${use.libs}" refid="build.classpath" />
+				<path location="${bin}" />
+			</classpath>
+			<classpath if:true="${use.libs}" refid="build.classpath" />
+		</javac>
+		<!--Copy css files to their appropriate locations in the bin directory (for JavaFx)-->
+		<copy todir="${bin}">
+			<fileset dir="${src}" includes="**/*.css" />
+		</copy>
+	</target>
+
+	<target if="${use.homebrew}" name="find.brew">
+		<exec unless:set="brew.path" searchpath="true" executable="env" outputproperty="brew.path">
+			<arg value="bash" />
+			<arg value="-l" />
+			<arg value="-c" />
+			<arg value="which brew" />
+		</exec>
+		<exec unless:set="brew.prefix" searchpath="true" executable="${brew.path}" outputproperty="brew.prefix">
+			<arg value="--prefix" />
+		</exec>
+	</target>
+
+	<target if="${use.libs}" name="construct.classpath" depends="find.brew">
+		<echo if:true="${use.homebrew}" level="info" message="Using libraries from homebrew." />
+		<echo unless:true="${use.homebrew}" level="info" message="Using libraries from ${libs}" />
+		<pathconvert property="manifest.classpath" pathsep=" ">
+			<path id="build.classpath">
+				<multirootfileset id="library">
+					<basedir if:set="brew.prefix" file="${brew.prefix}/lib/" />
+					<basedir file="${libs}" />
+					<patternset refid="libraries" />
+				</multirootfileset>
+			</path>
+			<scriptmapper language="javascript">
+				self.addMappedName(source.replace(/ /g, "%20"));
+			</scriptmapper>
+		</pathconvert>
+		<pathconvert property="jar.classpath" pathsep=" ">
+			<path>
+				<pathelement location="${jar}" />
+			</path>
+			<scriptmapper language="javascript">
+				self.addMappedName(source.replace(/ /g, "%20"));
+			</scriptmapper>
+		</pathconvert>
+	</target>
+
+	<target name="create_jar" depends="construct.classpath,clean,javadoc,build">
+		<jar destfile="${jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="eventdetection.downloader.DownloaderController" />
+				<attribute if:true="${use.libs}" name="Class-Path" value="${manifest.classpath}" />
+				<attribute unless:true="${use.libs}" name="Class-Path" value="." />
+			</manifest>
+			<fileset dir="${bin}">
+				<patternset refid="Build Excludes" />
+				<patternset refid="Debug" />
+			</fileset>
+			<fileset if:true="${package.doc}" dir="." includes="${doc}/**" />
+			<fileset if:true="${package.nativelibs}" dir="." includes="${nativelibs}/**" />
+			<fileset if:true="${package.src}" dir="${src}" />
+			<restrict if:true="${package.libs}">
+				<name regex=".*\.(class|java)" />
+				<archives>
+					<zips>
+						<multirootfileset refid="library" />
+					</zips>
+				</archives>
+			</restrict>
+		</jar>
+		<!--These jar commands just create .jar files with alternate entry classes-->
+		<property name="validator-jar" location="${prefix}validator.jar" />
+		<jar destfile="${validator-jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="eventdetection.validator.ValidatorController" />
+				<attribute name="Class-Path" value="${jar.classpath}" />
+			</manifest>
+		</jar>
+		<property name="text-rank-jar" location="${prefix}text-rank.jar" />
+		<jar destfile="${text-rank-jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="eventdetection.textrank.TextRank" />
+				<attribute name="Class-Path" value="${jar.classpath}" />
+			</manifest>
+		</jar>
+		<property name="pipeline-jar" location="${prefix}pipeline.jar" />
+		<jar destfile="${pipeline-jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="eventdetection.pipeline.Pipeline" />
+				<attribute name="Class-Path" value="${jar.classpath}" />
+			</manifest>
+		</jar>
+		<property name="voting-jar" location="${prefix}voting.jar" />
+		<jar destfile="${voting-jar}" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="eventdetection.voting.VotingController" />
+				<attribute name="Class-Path" value="${jar.classpath}" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean" description="Remove all files created by the build process.">
+		<echo unless:true="${clean}" level="info" message="Cleaning disabled." />
+		<delete if:true="${clean}" dir="${bin}" />
+		<delete if:true="${clean}" dir="${doc}" />
+	</target>
+</project>

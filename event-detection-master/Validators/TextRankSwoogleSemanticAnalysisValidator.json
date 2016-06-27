@@ -1,0 +1,8 @@
+{
+	"static" : {
+		"url-prefix" : "http://swoogle.umbc.edu/StsService/GetStsSim?operation=api"
+	},
+	"instance" : {
+
+	}
+}

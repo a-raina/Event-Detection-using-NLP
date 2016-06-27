@@ -1,0 +1,14 @@
+DROP USER IF EXISTS root;
+DROP TABLE IF EXISTS feeds CASCADE;
+DROP TRIGGER IF EXISTS generate_invalidates on validation_results;
+DROP TABLE IF EXISTS validation_algorithms CASCADE;
+DROP TABLE IF EXISTS validation_results CASCADE;
+DROP TABLE IF EXISTS query_articles CASCADE;
+DROP TABLE IF EXISTS query_words CASCADE;
+DROP TABLE IF EXISTS articles CASCADE;
+DROP TABLE IF EXISTS query_notifications CASCADE;
+DROP TABLE IF EXISTS notification_types CASCADE;
+DROP TRIGGER IF EXISTS make_empty_string on queries;
+DROP TABLE IF EXISTS queries CASCADE;
+DROP TABLE IF EXISTS sources CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
